@@ -1,0 +1,4 @@
+bottle==0.13.4
+segno==1.6.6
+tinydb==4.9.0
+defusedxml==0.7.1

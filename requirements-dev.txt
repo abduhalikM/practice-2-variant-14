@@ -1,0 +1,6 @@
+-r requirements.txt
+hypothesis==6.170.15
+coverage==7.17.2
+flake8==7.3.0
+flake8-docstrings==1.7.0
+pep8-naming==0.15.1
