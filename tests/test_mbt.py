@@ -78,21 +78,37 @@ class ApiMachine(RuleBasedStateMachine):
         """Сравнить поиск, чтение по id и формулу через HTTP-клиент."""
         expected_participants = self.model.tables["participant"]
         assert self.client.participant_query() == expected_participants
+        self._check_inspections()
+        self._check_commands()
+        self._check_replies()
+        self._check_report()
+
+    def _check_inspections(self) -> None:
+        """Сравнить чтение каждой записи по идентификатору."""
         for entity in ("participant", "command", "reply"):
             for expected in self.model.tables[entity]:
                 inspect = getattr(self.client, entity + "_inspect")
                 self._assert_record(inspect(expected["id"]), expected)
+
+    def _check_commands(self) -> None:
+        """Сравнить команды каждого участника с эталонной моделью."""
         for participant in self.model.tables["participant"]:
             expected = self.model.query(
                 "command", {"participant": participant["id"]},
             )
             assert self.client.command_query(participant["id"]) == expected
+
+    def _check_replies(self) -> None:
+        """Сравнить количество и содержимое ответов каждой команды."""
         for command in self.model.tables["command"]:
             actual = self.client.reply_query(command["id"])
             expected = self.model.query("reply", {"command": command["id"]})
             assert len(actual) == len(expected)
             for row, reference in zip(actual, expected):
                 self._assert_record(row, reference)
+
+    def _check_report(self) -> None:
+        """Сравнить проекцию отчёта и проверить отсутствие повторов."""
         rows = self.client.report_query()
         projection = {
             (row["description"], row["ip"], row["response"]) for row in rows

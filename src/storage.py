@@ -26,7 +26,9 @@ class Storage(ABC):
                 self.inspect("command", record["command"])
             return self._insert(entity, record)
 
-    def query(self, entity: str, filters: Record | None = None) -> list[Record]:
+    def query(
+        self, entity: str, filters: Record | None = None,
+    ) -> list[Record]:
         """Найти записи по точным совпадениям полей."""
         with self.lock:
             return self._select(entity, clean_fields(entity, filters or {}))

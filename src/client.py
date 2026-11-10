@@ -68,7 +68,9 @@ class ApiClient:
             "POST", "/api/insert-participant", encode_request(data),
         )
 
-    def participant_query(self, filters: Record | None = None) -> list[Record]:
+    def participant_query(
+        self, filters: Record | None = None,
+    ) -> list[Record]:
         """Найти участников по значениям полей в строке запроса."""
         return self.request("POST", "/api/query-participant", query=filters)
 
@@ -80,7 +82,9 @@ class ApiClient:
 
     def command_insert(self, data: Record) -> Record:
         """Создать вычислительную задачу, не ожидая готового SVG."""
-        return self.request("POST", "/api/insert-command", encode_request(data))
+        return self.request(
+            "POST", "/api/insert-command", encode_request(data),
+        )
 
     def command_query(
         self, participant: int, filters: Record | None = None,

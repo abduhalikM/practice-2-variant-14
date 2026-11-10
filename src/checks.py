@@ -9,7 +9,7 @@ import tokenize
 from pathlib import Path
 
 
-line_limit = 80
+line_limit = 79
 function_limit = 40
 argument_limit = 7
 file_limit = 1000
@@ -32,6 +32,23 @@ def check_function(node: ast.FunctionDef) -> list[str]:
     return issues
 
 
+def check_class(node: ast.ClassDef) -> list[str]:
+    """Проверить имя и документацию класса."""
+    if not ast.get_docstring(node) or not class_case.fullmatch(node.name):
+        return ["неверное имя или нет docstring класса"]
+    return []
+
+
+def check_comparison(node: ast.Compare) -> list[str]:
+    """Найти числовые литералы среди операндов сравнения."""
+    issues = []
+    for value in [node.left] + node.comparators:
+        if isinstance(value, ast.Constant):
+            if type(value.value) in (int, float):
+                issues.append("числовой литерал в сравнении")
+    return issues
+
+
 def check_tree(tree: ast.Module) -> list[str]:
     """Проверить функции, классы и числовые литералы в сравнениях."""
     issues = []
@@ -41,14 +58,9 @@ def check_tree(tree: ast.Module) -> list[str]:
         if isinstance(node, ast.FunctionDef):
             issues.extend(check_function(node))
         if isinstance(node, ast.ClassDef):
-            valid_name = class_case.fullmatch(node.name)
-            if not ast.get_docstring(node) or not valid_name:
-                issues.append("неверное имя или нет docstring класса")
+            issues.extend(check_class(node))
         if isinstance(node, ast.Compare):
-            for value in [node.left] + node.comparators:
-                if isinstance(value, ast.Constant):
-                    if type(value.value) in (int, float):
-                        issues.append("числовой литерал в сравнении")
+            issues.extend(check_comparison(node))
     return issues
 
 
@@ -60,7 +72,7 @@ def check_file(path: Path) -> list[str]:
     if len(lines) > file_limit:
         issues.append("файл длиннее 1000 строк")
     if any(len(line) > line_limit for line in lines):
-        issues.append("строка длиннее 80 символов")
+        issues.append("строка длиннее 79 символов")
     if source and not source.endswith("\n"):
         issues.append("нет завершающего перевода строки")
     for token in tokenize.generate_tokens(io.StringIO(source).readline):
@@ -81,7 +93,7 @@ def main() -> int:
         return 1
     result = subprocess.run(
         [sys.executable, "-B", "-m", "flake8", "src", "tests",
-         "--max-line-length=80", "--max-complexity=10"], cwd=root,
+         "--max-line-length=79", "--max-complexity=10"], cwd=root,
     )
     if result.returncode:
         return result.returncode

@@ -54,7 +54,9 @@ def protect(callback: object, settings: Settings) -> object:
         try:
             result = callback(**arguments)
             return encode_response({"ok": True, "result": result})
-        except (ValueError, KeyError, ParseError, DefusedXmlException) as error:
+        except (
+            ValueError, KeyError, ParseError, DefusedXmlException,
+        ) as error:
             return encode_response({"ok": False, "error": str(error)})
     return wrapped
 
